@@ -135,6 +135,8 @@ var verifyAnswers = (questions, answers) => {
                 res.status(404).send({error: "Survey Not Found."});
             }
 
+            console.log(survey);
+
             let results = JSON.parse(JSON.stringify(survey.answers[0]));
 
             delete results.createdAt;
@@ -159,10 +161,9 @@ var verifyAnswers = (questions, answers) => {
                 }
             }
 
-            survey.answers = results;
-
+            
             res.status(200);
-            res.send(survey)
+            res.send({...survey, answers: results})
         }catch(err){
             res.status(500);
             res.send({error: err});
