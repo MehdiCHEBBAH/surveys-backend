@@ -3,6 +3,7 @@ const { randomUUID } = require('crypto');
 var fs = require('fs');
 
 var config = require("../config.json");
+const { PassThrough } = require('stream');
 
 const router = express.Router();
 
@@ -133,6 +134,32 @@ var verifyAnswers = (questions, answers) => {
             }catch(err){
                 res.status(404).send({error: "Survey Not Found."});
             }
+
+            let results = JSON.parse(JSON.stringify(survey.answers[0]));
+
+            delete results.createdAt;
+
+            if(results){
+                for(let sec of Object.keys(results)){
+                    for(let qst of Object.keys(results[sec])){
+                        results[sec][qst] = {
+                            "true": 0,
+                            "false": 0
+                        }
+                    }
+                }
+            }
+
+            for(let ans of Object.keys(survey.answers)){
+                for(let sec of Object.keys(survey.answers[ans])){
+                    if(sec=='createdAt') continue
+                    for(let qst of Object.keys(survey.answers[ans][sec])){
+                        results[sec][qst][survey.answers[ans][sec][qst].toString()]++
+                    }
+                }
+            }
+
+            survey.answers = results;
 
             res.status(200);
             res.send(survey)
